@@ -1,0 +1,7 @@
+# Netlify hosts the static frontend only, not the FastAPI backend.
+[build]
+  publish = "frontend"
+  command = ""
+
+# Navigation uses /#compare, /#login, etc. No SPA catch-all is needed.
+# Do not rewrite /api/* to index.html: those routes need a real backend.

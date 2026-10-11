@@ -1,0 +1,24 @@
+{
+  "services": [
+    {
+      "type": "web",
+      "name": "dawaidaam",
+      "runtime": "python",
+      "plan": "starter",
+      "numInstances": 1,
+      "buildCommand": "pip install -r requirements.txt",
+      "startCommand": "uvicorn backend.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'",
+      "healthCheckPath": "/api/health",
+      "envVars": [
+        { "key": "DB_PATH", "value": "/var/data/rx.db" },
+        { "key": "ENABLE_DEMO", "value": "true" },
+        { "key": "ENABLE_OSM", "value": "true" }
+      ],
+      "disk": {
+        "name": "dawaidaam-data",
+        "mountPath": "/var/data",
+        "sizeGB": 1
+      }
+    }
+  ]
+}

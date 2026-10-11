@@ -1,0 +1,33 @@
+{
+  "_comment": "Online providers. type=demo gives synthetic prices; type=http scrapes/queries a site YOU have permission to use (see README). Delivery rule fields: base_fee, free_above, per_km, max_km, min_order, platform_fee, eta_minutes, eta_per_km.",
+  "online": [
+    {"id":"demo-medmart","type":"demo","name":"MedMart (demo)","url":"https://example.com/medmart","price_factor":0.80,
+     "delivery":{"base_fee":49,"free_above":499,"platform_fee":6,"eta_minutes":1440}},
+    {"id":"demo-quickrx","type":"demo","name":"QuickRx 45-min (demo)","url":"https://example.com/quickrx","price_factor":0.95,
+     "delivery":{"base_fee":15,"per_km":6,"max_km":8,"platform_fee":12,"eta_minutes":25,"eta_per_km":4},"hyperlocal":true},
+    {"id":"demo-healthbox","type":"demo","name":"HealthBox (demo)","url":"https://example.com/healthbox","price_factor":0.88,
+     "delivery":{"base_fee":35,"free_above":299,"min_order":50,"platform_fee":0,"eta_minutes":2880}},
+
+    {"id":"example-json-api","type":"http","enabled":false,"name":"Example e-pharmacy (JSON API)",
+     "search_url":"https://api.example-pharmacy.test/v1/search?q={query}&pincode={pincode}",
+     "response":"json","items_path":"data.products",
+     "fields":{"title":"name","price":"pricing.selling_price","in_stock":"available","url":"slug"},
+     "url_prefix":"https://www.example-pharmacy.test/p/","respect_robots":true,"min_interval_s":2,
+     "delivery":{"base_fee":40,"free_above":400,"platform_fee":5,"eta_minutes":1440}},
+
+    {"id":"example-html","type":"http","enabled":false,"name":"Example e-pharmacy (HTML)",
+     "search_url":"https://www.example-pharmacy2.test/search?q={query}",
+     "response":"html","item_selector":".product-card",
+     "fields":{"title":".product-title","price":".price-now","url":"a@href"},
+     "respect_robots":true,"min_interval_s":3,
+     "delivery":{"base_fee":50,"free_above":600,"eta_minutes":1440}}
+  ],
+  "demo_store_chains": [
+    {"name":"CityCare Pharmacy","price_factor":1.00,"delivers":true,"delivery":{"base_fee":30,"free_above":300,"max_km":4,"eta_minutes":40,"eta_per_km":6}},
+    {"name":"Apex Medicals","price_factor":0.92,"delivers":false},
+    {"name":"Lifeline Chemist","price_factor":1.06,"delivers":true,"delivery":{"base_fee":20,"max_km":3,"eta_minutes":35,"eta_per_km":8}},
+    {"name":"Sri Sai Medicals","price_factor":0.86,"delivers":false},
+    {"name":"WellNest Pharmacy","price_factor":0.97,"delivers":true,"delivery":{"base_fee":25,"free_above":250,"max_km":5,"eta_minutes":45,"eta_per_km":5}},
+    {"name":"GreenCross Drugstore","price_factor":1.0,"delivers":false}
+  ]
+}

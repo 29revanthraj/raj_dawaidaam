@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DawaiDaam - compare medicine prices near you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="/styles.css?v=python-host-7">
+</head>
+<body>
+<a class="skip-link" href="#q">Skip to medicine search</a>
+<header class="top">
+  <h1>DawaiDaam</h1>
+  <p>Your medicines. Clearer prices. Smarter choices.</p>
+  <nav class="navigation" aria-label="Main navigation">
+    <a href="#compare">Compare</a><a href="#history">History</a>
+    <a href="#basket">Basket <span id="basket-count">0</span></a>
+    <a href="#addresses">Addresses</a>
+    <a href="#login" id="account-link">Log in</a>
+    <button id="logout" class="secondary" hidden>Log out</button>
+  </nav>
+  <p id="account-status" class="hint" role="status"></p>
+</header>
+
+<main id="compare-page" class="layout" data-page="compare">
+  <section class="home-hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <span class="eyebrow">A little clarity for your everyday care</span>
+      <h2 id="hero-title">Care for your health.<br><span>Compare what you pay.</span></h2>
+      <p>Find your medicine, understand it, and compare online and nearby pharmacy options—with delivery, fees and travel costs in view.</p>
+      <a class="hero-cta" href="#q">Find a medicine <span aria-hidden="true">↗</span></a>
+      <div class="hero-tags"><span>Medicine information</span><span>Total-cost comparison</span><span>Your saved basket</span></div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 400 290" xmlns="http://www.w3.org/2000/svg" focusable="false">
+        <circle cx="210" cy="144" r="125" fill="#d7f7ef"/>
+        <circle cx="326" cy="65" r="30" fill="#e4ddff"/>
+        <circle cx="76" cy="226" r="23" fill="#ffdec9"/>
+        <g transform="rotate(-12 147 150)"><rect x="70" y="56" width="151" height="191" rx="22" fill="white" stroke="#b4dcd5" stroke-width="2"/>
+          <rect x="89" y="77" width="113" height="27" rx="8" fill="#e7f3f1"/>
+          <g fill="#9c8ce2"><ellipse cx="109" cy="135" rx="15" ry="21"/><ellipse cx="174" cy="135" rx="15" ry="21"/><ellipse cx="109" cy="192" rx="15" ry="21"/><ellipse cx="174" cy="192" rx="15" ry="21"/></g>
+          <g fill="#c9bffa"><ellipse cx="105" cy="130" rx="6" ry="11"/><ellipse cx="170" cy="130" rx="6" ry="11"/><ellipse cx="105" cy="187" rx="6" ry="11"/><ellipse cx="170" cy="187" rx="6" ry="11"/></g></g>
+        <g transform="rotate(10 274 182)"><rect x="226" y="104" width="103" height="142" rx="22" fill="white" stroke="#b4dcd5" stroke-width="2"/><rect x="235" y="85" width="85" height="30" rx="8" fill="#087f76"/><rect x="227" y="149" width="101" height="63" fill="#fce2cb"/><path d="M265 165h24v9h9v16h-9v9h-16v-9h-9v-16h9v-9" fill="#bb602c"/></g>
+        <g transform="rotate(-35 309 50)"><rect x="277" y="37" width="64" height="27" rx="13.5" fill="#ffb991"/><path d="M309 37h18a13.5 13.5 0 0 1 0 27h-18z" fill="white"/></g>
+        <path d="M44 106h20m-10-10v20M346 210h20m-10-10v20" stroke="#087f76" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+      <div class="art-caption">More clarity. Less guesswork.</div>
+    </div>
+  </section>
+  <aside class="controls" aria-label="Search controls">
+    <div class="search-heading"><span class="step-dot" aria-hidden="true">1</span><div><h2>Find your medicine</h2><p class="hint">Search a brand or generic name.</p></div></div>
+    <div class="field">
+      <label for="q">Medicine name</label>
+      <input id="q" type="search" autocomplete="off" placeholder="e.g. Dolo, Metformin, Cetirizine" aria-controls="suggest">
+      <ul id="suggest" class="suggest" role="listbox" hidden></ul>
+      <p id="picked" class="picked" hidden></p>
+    </div>
+    <div class="catalogue-actions"><button type="button" data-browse-medicines="all">Browse all medicines</button><button type="button" data-browse-medicines="liquids">Syrups &amp; liquids</button></div>
+    <p class="hint">A starter catalogue, not every medicine sold in India. Listing does not confirm pharmacy stock. Brand formulations can differ—always check the ingredient, strength and form.</p>
+
+    <div class="row2">
+      <div class="field"><label for="qty">Shopping quantity (tablets)</label>
+        <input id="qty" type="number" min="1" max="1000" value="30"></div>
+      <div class="field"><label for="radius">Search radius (km)</label>
+        <input id="radius" type="number" min="1" max="25" value="5"></div>
+    </div>
+
+    <div class="field">
+      <label for="travel">Your travel cost per km</label>
+      <input id="travel" type="number" min="0" max="500" step="0.5" value="8">
+      <p class="hint">Counted both ways for store pickup. Set 0 to ignore.</p>
+    </div>
+
+    <fieldset class="field loc">
+      <legend>Your location</legend>
+      <button id="geo" type="button" class="secondary">Use my location</button>
+      <div class="row2">
+        <input id="lat" type="number" step="any" placeholder="Latitude" aria-label="Latitude">
+        <input id="lng" type="number" step="any" placeholder="Longitude" aria-label="Longitude">
+      </div>
+      <input id="pin" type="text" inputmode="numeric" placeholder="Pincode (optional, for online delivery)" aria-label="Pincode">
+    </fieldset>
+
+    <button id="go" type="button" class="primary" disabled>Compare prices</button>
+    <p class="hint search-help">Quantity is the amount to buy, not a dose. For syrups and oral liquids, enter the number of bottles. Add your location to compare nearby prices.</p>
+    <p id="msg" class="msg" role="status"></p>
+  </aside>
+
+  <section class="results" aria-live="polite">
+    <section id="medicine-details" class="panel" hidden aria-label="Medicine information"></section>
+    <div id="welcome" class="home-welcome">
+      <div class="section-heading"><div><span class="eyebrow">Explore the catalogue</span><h2>A simpler start to your search</h2></div><span class="catalogue-label">Medicine information</span></div>
+      <p class="welcome-intro">Select a medicine below or search for yours. Check the name and strength against your prescription or packaging.</p>
+      <div class="medicine-grid" aria-label="Example medicines from the catalogue">
+        <button class="medicine-card peach" type="button" data-home-drug="paracetamol-650-tab"><span class="medicine-icon" aria-hidden="true">▰</span><span class="medicine-name">Paracetamol <small>650 mg · Tablet</small></span><span class="medicine-card-link">View information <span aria-hidden="true">→</span></span></button>
+        <button class="medicine-card violet" type="button" data-home-drug="cetirizine-10-tab"><span class="medicine-icon" aria-hidden="true">▰</span><span class="medicine-name">Cetirizine <small>10 mg · Tablet</small></span><span class="medicine-card-link">View information <span aria-hidden="true">→</span></span></button>
+        <button class="medicine-card mint" type="button" data-home-drug="metformin-500-tab"><span class="medicine-icon" aria-hidden="true">▰</span><span class="medicine-name">Metformin <small>500 mg · Tablet</small></span><span class="rx-label">Prescription required</span><span class="medicine-card-link">View information <span aria-hidden="true">→</span></span></button>
+        <button class="medicine-card blue" type="button" data-home-drug="amlodipine-5-tab"><span class="medicine-icon" aria-hidden="true">▰</span><span class="medicine-name">Amlodipine <small>5 mg · Tablet</small></span><span class="rx-label">Prescription required</span><span class="medicine-card-link">View information <span aria-hidden="true">→</span></span></button>
+      </div>
+      <section class="how-it-works" aria-labelledby="how-title">
+        <h3 id="how-title">From search to a clearer choice</h3>
+        <ol class="steps"><li><span class="step-dot" aria-hidden="true">1</span><div><strong>Find it</strong><p>Check medicine details and safety information.</p></div></li><li><span class="step-dot" aria-hidden="true">2</span><div><strong>Compare it</strong><p>See total costs, not just the medicine price.</p></div></li><li><span class="step-dot" aria-hidden="true">3</span><div><strong>Save it</strong><p>Log in to keep a basket and saved addresses.</p></div></li></ol>
+      </section>
+      <p class="home-safety">For informed shopping, not self-medication. Ask your doctor or pharmacist before taking a medicine or switching brands. Demo prices are always labelled.</p>
+    </div>
+    <div id="alt" class="alt" hidden></div>
+    <div id="summary" class="summary" hidden></div>
+
+    <div class="toolbar" id="toolbar" hidden>
+      <div class="seg" role="group" aria-label="Sort">
+        <button data-sort="total" class="on">Lowest total</button>
+        <button data-sort="fastest">Fastest</button>
+        <button data-sort="nearest">Nearest</button>
+      </div>
+      <div class="seg" role="group" aria-label="Show">
+        <button data-show="all" class="on">All</button>
+        <button data-show="online">Online</button>
+        <button data-show="store">Stores</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="instock"> Hide out of stock</label>
+    </div>
+
+    <div id="sources" class="sources"></div>
+    <ol id="list" class="list"></ol>
+    <div id="map" class="map" hidden></div>
+    <p class="legend" id="legend" hidden>
+      <span class="k k-item"></span>Medicine <span class="k k-del"></span>Delivery
+      <span class="k k-fee"></span>Fees <span class="k k-trv"></span>Your travel
+    </p>
+  </section>
+</main>
+
+<main class="page" data-page="login" hidden>
+  <section class="panel auth-panel">
+    <h2 id="auth-title">Welcome back</h2>
+    <p>Log in to save medicine comparisons and keep your basket across visits.</p>
+    <form id="auth-form" class="form-grid">
+      <div class="field"><label for="email">Email address</label><input id="email" type="email" autocomplete="username" maxlength="254" required></div>
+      <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" minlength="10" maxlength="128" required></div>
+      <p class="hint">Use at least 10 characters. Only password hashes are stored.</p>
+      <button id="auth-submit" class="primary" type="submit">Log in</button>
+      <button id="auth-toggle" type="button" class="secondary">New here? Create an account</button>
+      <p id="auth-message" class="msg" role="status"></p>
+    </form>
+  </section>
+</main>
+
+<main class="page" data-page="history" hidden>
+  <section class="panel">
+    <div class="page-heading"><h2>Your search history</h2><button id="clear-history" class="secondary" hidden>Clear history</button></div>
+    <p class="hint">Your last 100 comparisons while logged in. Precise location and pincode are not saved. You can delete this history at any time.</p>
+    <p id="history-message" role="status"></p>
+    <ol id="history-list" class="list"></ol>
+  </section>
+</main>
+
+<main class="page" data-page="basket" hidden>
+  <section class="panel">
+    <h2>Your medicine basket</h2>
+    <p class="hint">A saved list, not an order or a prescription. Compare again for current costs. Pharmacy search links do not confirm stock; check the exact strength, pack and prescription requirements with the retailer.</p>
+    <p id="basket-message" role="status"></p>
+    <ol id="basket-list" class="list"></ol>
+  </section>
+  <section class="panel" aria-label="Whole basket comparison">
+    <h2>Where can I get the whole basket?</h2>
+    <p class="hint">Checks every saved item at each provider or store. Delivery and platform fees are applied once to the basket subtotal. Stock and prices are only as current as the source; online checkout charges are not verified by this app.</p>
+    <p class="hint">Reported stock does not guarantee enough packs for your requested quantity. Confirm quantities and final charges with the pharmacy before buying.</p>
+    <p class="hint">Nearby stores are searched within 5 km. Basket totals exclude your personal travel costs. Online links open the provider's website; automatic transfer to its basket is not currently supported.</p>
+    <form id="basket-compare-form" class="form-grid">
+      <div class="field"><label for="checkout-address">Delivery address</label><select id="checkout-address"><option value="">Use a one-time location</option></select></div>
+      <p id="selected-address" class="hint"></p>
+      <a href="#addresses">Add or manage home addresses</a>
+      <div id="checkout-manual" class="form-grid">
+      <button id="basket-geo" type="button" class="secondary">Use my location</button>
+      <div class="row2">
+        <div class="field"><label for="basket-lat">Latitude</label><input id="basket-lat" type="number" min="-90" max="90" step="any" required></div>
+        <div class="field"><label for="basket-lng">Longitude</label><input id="basket-lng" type="number" min="-180" max="180" step="any" required></div>
+      </div>
+      <div class="field"><label for="basket-pin">Delivery pincode (optional)</label><input id="basket-pin" type="text" maxlength="20" inputmode="numeric"></div>
+      </div>
+      <button id="basket-check" class="primary" type="submit">Check whole basket</button>
+    </form>
+    <p id="basket-compare-message" role="status"></p>
+    <ol id="basket-offers" class="list"></ol>
+  </section>
+</main>
+
+<main class="page" data-page="addresses" hidden>
+  <section class="panel">
+    <h2>Your home addresses</h2>
+    <p class="hint">Save multiple addresses and select one in basket checkout. Addresses are private to your account. They are not automatically transferred to external pharmacy websites.</p>
+    <p id="addresses-message" role="status"></p>
+    <ol id="addresses-list" class="list"></ol>
+  </section>
+  <section id="address-editor" class="panel" hidden>
+    <h2 id="address-title">Add a home address</h2>
+    <form id="address-form" class="form-grid">
+      <fieldset class="field form-grid">
+        <legend>Choose this home's location</legend>
+        <div class="page-heading">
+          <button id="address-geo" type="button" class="secondary">Use current location</button>
+        </div>
+        <p class="hint">Optional: use current location only while at this home. You can save an address without coordinates.</p>
+      </fieldset>
+      <div class="row2">
+        <div class="field"><label for="address-label">Address label</label><input id="address-label" type="text" maxlength="60" placeholder="Home, parents' home…" required></div>
+        <div class="field"><label for="address-recipient">Recipient name</label><input id="address-recipient" type="text" maxlength="100" autocomplete="name" required></div>
+      </div>
+      <div class="field"><label for="address-line1">House / flat and street</label><input id="address-line1" type="text" maxlength="200" autocomplete="address-line1" required></div>
+      <div class="field"><label for="address-line2">Area / landmark (optional)</label><input id="address-line2" type="text" maxlength="200" autocomplete="address-line2"></div>
+      <div class="row2">
+        <div class="field"><label for="address-city">City</label><input id="address-city" type="text" maxlength="100" autocomplete="address-level2" required></div>
+        <div class="field"><label for="address-state">State</label><input id="address-state" type="text" maxlength="100" autocomplete="address-level1" required></div>
+      </div>
+      <div class="field"><label for="address-pincode">Pincode</label><input id="address-pincode" type="text" pattern="[1-9][0-9]{5}" maxlength="6" inputmode="numeric" autocomplete="postal-code" required></div>
+      <p class="hint">Coordinates are optional. Enter both or leave both blank. Nearby-store comparisons need a location, which you can supply later in the basket. Typed addresses are not automatically geocoded.</p>
+      <div class="row2">
+        <div class="field"><label for="address-lat">Latitude (optional)</label><input id="address-lat" type="number" min="-90" max="90" step="any"></div>
+        <div class="field"><label for="address-lng">Longitude (optional)</label><input id="address-lng" type="number" min="-180" max="180" step="any"></div>
+      </div>
+      <div class="page-heading"><button id="address-save" type="submit" class="primary">Save address</button><button id="address-cancel" type="button">Clear / cancel edit</button></div>
+      <p id="address-form-message" class="msg" role="status"></p>
+    </form>
+  </section>
+</main>
+
+<footer class="foot">
+  All medicines are drugs and may cause side effects or interactions. Do not self-medicate or misuse them.
+  Prescription medicines require a qualified clinician's advice; antibiotics are not for viral colds or flu.
+  Children's liquid doses must be confirmed with a clinician or pharmacist. Shopping quantities are not doses.
+  This starter catalogue is not exhaustive and does not confirm stock. Prices are indicative and can change. Confirm with the pharmacy before you buy. This is not medical advice;
+  ask your doctor or pharmacist before switching brands. Entries marked "demo" are synthetic.
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/app.js?v=python-host-7"></script>
+</body>
+</html>
